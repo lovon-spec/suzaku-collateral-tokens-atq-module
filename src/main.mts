@@ -7,7 +7,7 @@ const deployment = "QmYWxWtCAhUiNMAd6GQYXi7V2W2FGaWZrZufQEcTnMMYpP";
 const endpoint = `https://gateway.thegraph.com/api/deployments/id/${deployment}`;
 // Bind the protocol identity from the selected published Suzaku source.
 const provider = "0xe5296638aa86bd4175d802a210e158688e41a93c";
-type Token = { id: string };
+type Token = { id: string; name: string };
 type Pool = { id: string; inputTokens: Token[]; protocol: { id: string } };
 type Meta = { deployment: string; hasIndexingErrors: boolean; block: { number: number; hash: string | null } };
 function address(value: string): string {
@@ -42,7 +42,7 @@ const service: ITagService = {
     let cursor = "0x";
     for (;;) {
       const d = await query(`{ _meta(${atBlock}) { deployment hasIndexingErrors block { number hash } }
-        pools(first: 1000, orderBy: id, orderDirection: asc, where: { id_gt: ${JSON.stringify(cursor)} }, ${atBlock}) { id protocol { id } inputTokens { id } } }`, apiKey);
+        pools(first: 1000, orderBy: id, orderDirection: asc, where: { id_gt: ${JSON.stringify(cursor)} }, ${atBlock}) { id protocol { id } inputTokens { id name } } }`, apiKey);
       meta(d._meta, initial);
       const rows = d.pools;
       if (!Array.isArray(rows) || rows.length > 1000) throw new Error("Invalid source page");
@@ -58,7 +58,12 @@ const service: ITagService = {
         const asset = address(market.inputTokens[0].id);
         if (asset === contract || seen.has(contract)) throw new Error("Underlying asset or repeated collateral contract");
         seen.add(contract);
-        const label = `Default Collateral Token (${contract.slice(2, 12)})`;
+        // Official implementation initializes each wrapper name as
+        // DefaultCollateral_<asset name>; the source indexes that asset.
+        const assetName = market.inputTokens[0].name;
+        if (typeof assetName !== "string" || !assetName || assetName !== assetName.trim() || /[\u0000-\u001f\u007f]/.test(assetName)) throw new Error("Unknown collateral asset name");
+        const label = `DefaultCollateral_${assetName}`;
+        if (label.length > 50) throw new Error("Official collateral name exceeds tag length");
         if (labels.has(label)) throw new Error("Ambiguous tag label");
         labels.add(label);
         tags.push({ "Contract Address": `eip155:43114:${contract}`, "Public Name Tag": label, "Project Name": "Suzaku", "UI/Website Link": "https://suzaku.network", "Public Note": `Legacy Default Collateral ERC-20 wrapper token on Avalanche. Indexed underlying asset: ${asset}. Suzaku's collateral implementation derives from Symbiotic. Includes historical contracts; no claim of current restaking, backing or operator identity.` });

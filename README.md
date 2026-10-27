@@ -4,7 +4,7 @@ Unpublished ATQ draft for Avalanche (43114). The category is legacy Default Coll
 
 Messari deployment list: https://github.com/messari/subgraphs/blob/master/deployment/deployment.json
 
-Exact source subgraph ChnR9QwW6tzKt2hbuHLmHqeB1Sk35UzR1XDbxYBA3cvW, deployment QmYWxWtCAhUiNMAd6GQYXi7V2W2FGaWZrZufQEcTnMMYpP. The published mapping initializes each Pool from the Collateral Deposit/Withdraw emitter address; its name/symbol instead name the underlying asset. This module therefore uses an explicit Default Collateral label plus address prefix, and lists the exact indexed asset in the note. It binds protocol identity, handles complete Bytes-ID cursor pagination at one block hash, and throws on unknown roles, source errors, duplicates or label collisions. No source row is artificially capped.
+Exact source subgraph ChnR9QwW6tzKt2hbuHLmHqeB1Sk35UzR1XDbxYBA3cvW, deployment QmYWxWtCAhUiNMAd6GQYXi7V2W2FGaWZrZufQEcTnMMYpP. The published mapping initializes each Pool from the Collateral Deposit/Withdraw emitter address; its name/symbol instead name the underlying asset. The official implementation initializes each wrapper name as DefaultCollateral_<asset name>. This module uses that exact naming rule with the indexed asset name, without truncation or constructed address suffixes, and lists the exact indexed asset in the note. It binds protocol identity, handles complete Bytes-ID cursor pagination at one block hash, and throws on unknown roles, source errors, duplicates, names longer than 50 characters or label collisions. No source row is artificially capped.
 
 References: https://github.com/messari/subgraphs/blob/master/subgraphs/suzaku/src/mappings/handlers.ts and https://github.com/suzaku-network/collateral
 
